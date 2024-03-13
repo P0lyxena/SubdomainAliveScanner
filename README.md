@@ -17,7 +17,8 @@ SubdomainAliveScanner is a powerful, asynchronous Python tool designed to quickl
 
 - Python 3.7+
 - `aiohttp`
-
+- `asyncio`
+  
 ## Installation
 
 First, ensure you have Python 3.7 or higher installed on your system. Then, install the required `aiohttp` library using pip:
