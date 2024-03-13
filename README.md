@@ -1,6 +1,6 @@
 ### README.md
 
-```markdown
+
 # SubdomainAliveScanner
 
 SubdomainAliveScanner is a powerful, asynchronous Python tool designed to quickly scan thousands of subdomains, identifying those that are "alive" based on specific HTTP status codes. Utilizing `aiohttp` for non-blocking I/O operations, it offers an efficient way to conduct large-scale subdomain status checks, providing real-time feedback and detailed summaries of scan results.
