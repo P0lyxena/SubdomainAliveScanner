@@ -24,6 +24,7 @@ First, ensure you have Python 3.7 or higher installed on your system. Then, inst
 
 ```bash
 pip install aiohttp
+pip install asyncio
 ```
 
 ## Usage
@@ -42,7 +43,7 @@ python main.py
 To modify which HTTP status codes are considered, edit the `alive_status_codes` list within the script:
 
 ```python
-alive_status_codes = [200, 500, 404, 403]
+alive_status_codes = [200, 500, 404, 403, etc..]
 ```
 
 You can also adjust the maximum number of concurrent requests by changing the `concurrency_limit` variable:
