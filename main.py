@@ -68,4 +68,9 @@ def main():
     """
     # Load subdomains from the input file into a list.
     subdomains = [line.strip() for line in open(input_file_path, 'r')]
-    # Print an initial message indicating the start of the scan and the total
+    # Print an initial message indicating the start of the scan and the total number of subdomains to be scanned.
+    print(f"Starting scan of {len(subdomains)} subdomains...")
+    asyncio.run(run_subdomain_checks(subdomains))  # Run the asynchronous subdomain checks.
+
+if __name__ == '__main__':
+    main()  # Execute the main function if the script is run directly.
