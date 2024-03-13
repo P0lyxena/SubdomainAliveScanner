@@ -1,34 +1,56 @@
 import aiohttp  # Import aiohttp for asynchronous HTTP requests.
 import asyncio  # Import asyncio for asynchronous programming.
 from datetime import datetime, timedelta  # Import datetime for timestamping and timedelta for measuring durations.
+import ssl
+
+# When creating the session, disable SSL certificate verification
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
 
 # Define constants for file paths and HTTP status codes.
 input_file_path = 'subdomains.txt'  # Path to the input file listing subdomains to scan.
 current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M')  # Format current datetime for file naming.
 output_file_path = f'result_{current_datetime}.txt'  # Generate output file name with current datetime.
-alive_status_codes = [200, 500, 404, 403]  # HTTP status codes considered as indicating an "alive" subdomain.
-concurrency_limit = 250  # Maximum number of concurrent asynchronous HTTP requests.
+alive_status_codes = [
+    # Successful Responses
+    200,  # OK
+    # Redirection Messages
+    301,  # Moved Permanently
+    302,  # Found
+    303,  # See Other
+    307,  # Temporary Redirect
+    308,  # Permanent Redirect
+    # Client Error Responses
+    400,  # Bad Request
+    401,  # Unauthorized
+    403,  # Forbidden
+    404,  # Not Found
+    # Server Error Responses
+    500,  # Internal Server Error
+    502,  # Bad Gateway
+    503,  # Service Unavailable
+    # Rate Limiting
+    429
+] # HTTP status codes considered as indicating an "alive" subdomain.
+concurrency_limit = 200  # Maximum number of concurrent asynchronous HTTP requests.
 
 async def check_subdomain_status(session, subdomain, index, total):
-    """
-    Asynchronously checks the status of a subdomain and logs the progress.
-
-    Args:
-        session (aiohttp.ClientSession): The session object for making requests.
-        subdomain (str): The subdomain to check.
-        index (int): The current index of the subdomain in the list.
-        total (int): The total number of subdomains being scanned.
-    """
-    try:
-        async with session.get(f'http://{subdomain}', timeout=10) as response:  # Attempt to make an HTTP GET request.
-            # Log the progress after each request.
-            print(f'\rScanned {index + 1} out of {total} subdomains - last subdomain checked: {subdomain}', end='', flush=True)
-            if response.status in alive_status_codes:  # Check if the status code is in the list of "alive" codes.
-                return subdomain  # Return the subdomain if it's considered alive.
-    except Exception as e:
-        # Log an error message if the request fails for any reason.
-        print(f'\rScanned {index + 1} out of {total} subdomains - last subdomain checked: {subdomain} (error)', end='', flush=True)
-    return None  # Return None if the subdomain is not alive or if an error occurred.
+    for attempt in range(3):  # Attempt the request up to 3 times
+        try:
+            # Use the session with SSL verification disabled
+            response = await session.get(f'http://{subdomain}', ssl=ssl_context)
+            if response.status in alive_status_codes:
+                print(f"Success for {subdomain} on attempt {attempt + 1}")
+                break  # Exit the loop on success
+        except (aiohttp.ClientError, asyncio.TimeoutError, aiohttp.ClientConnectorCertificateError) as e:
+            if attempt < 2:
+                print(f"Retry {attempt + 1} for {subdomain} due to {e}")
+            else:
+                print(f"Failed for {subdomain} after 3 attempts. Error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred for {subdomain}: {e}")
+            break  # Break on unexpected errors to avoid infinite loops
 
 async def run_subdomain_checks(subdomains):
     """
