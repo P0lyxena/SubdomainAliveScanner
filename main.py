@@ -33,15 +33,16 @@ alive_status_codes = [
     # Rate Limiting
     429
 ] # HTTP status codes considered as indicating an "alive" subdomain.
-concurrency_limit = 200  # Maximum number of concurrent asynchronous HTTP requests.
+concurrency_limit = 250  # Maximum number of concurrent asynchronous HTTP requests.
 
 async def check_subdomain_status(session, subdomain, index, total):
     for attempt in range(3):  # Attempt the request up to 3 times
         try:
             # Use the session with SSL verification disabled
-            response = await session.get(f'http://{subdomain}', ssl=ssl_context)
+            response = await session.get(f'http://{subdomain}', ssl=ssl_context, timeout=10)
             if response.status in alive_status_codes:
                 print(f"Success for {subdomain} on attempt {attempt + 1}")
+                return subdomain
                 break  # Exit the loop on success
         except (aiohttp.ClientError, asyncio.TimeoutError, aiohttp.ClientConnectorCertificateError) as e:
             if attempt < 2:
