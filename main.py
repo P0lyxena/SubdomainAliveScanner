@@ -43,7 +43,6 @@ async def check_subdomain_status(session, subdomain, index, total):
             if response.status in alive_status_codes:
                 print(f"Success for {subdomain} on attempt {attempt + 1}")
                 return subdomain
-                break  # Exit the loop on success
         except (aiohttp.ClientError, asyncio.TimeoutError, aiohttp.ClientConnectorCertificateError) as e:
             if attempt < 2:
                 print(f"Retry {attempt + 1} for {subdomain} due to {e}")
